@@ -1,0 +1,83 @@
+### So sánh và đặc trưng của từng cụm
+
+#### **Cụm 0**
+- **Trung bình G3: 13.08** (khá cao, gần ngưỡng "Khá").
+- **Đặc trưng định lượng**:
+  - `age: 16.44` (trẻ hơn một chút so với các cụm khác).
+  - `famrel: 4.09` (mối quan hệ gia đình rất tốt, cao nhất trong các cụm).
+  - `health: 3.63` (sức khỏe tốt, cao hơn trung bình).
+  - `absences: 3.47` (vắng học ít, thấp hơn cụm 2 và 1).
+  - `studytime: 2.14` (thời gian học trung bình, không phải cao nhất).
+- **Đặc trưng định tính**:
+  - `higher: yes (99.2%)` (động lực học lên cao rất cao, cao nhất trong các cụm).
+  - `school: GP (87.9%)`, `address: U (84.5%)`, `Pstatus: T (87.9%)` (học ở trường GP, sống ở khu vực đô thị, bố mẹ sống cùng, chiếm tỷ lệ rất cao).
+  - `sex: F (55.1%)` (học sinh nữ chiếm ưu thế nhẹ).
+- **Đặc trưng nổi bật**: Cụm này có môi trường gia đình ổn định (famrel cao), học sinh trẻ, sống ở đô thị, và có động lực học lên cao rất mạnh. Sự khác biệt chính là mức độ cam kết học tập cao (higher: 99.2%) và quan hệ gia đình tốt, làm nên đặc trưng của nhóm học sinh có tiềm năng học tập tốt.
+
+#### **Cụm 1**
+- **Trung bình G3: 11.08** (trung bình, thấp hơn cụm 0).
+- **Đặc trưng định lượng**:
+  - `age: 16.78` (tuổi cao hơn một chút so với cụm 0).
+  - `absences: 7.74` (vắng học nhiều, cao thứ hai sau cụm 2).
+  - `Walc: 4.11`, `goout: 4.10` (uống rượu cuối tuần và đi chơi nhiều, cao nhất trong các cụm).
+  - `studytime: 1.65` (thời gian học thấp, thấp nhất trong các cụm).
+- **Đặc trưng định tính**:
+  - `sex: M (73.9%)` (học sinh nam chiếm ưu thế rõ rệt).
+  - `schoolsup: no (92.4%)` (ít được hỗ trợ từ trường, cao nhất).
+  - `higher: yes (89.2%)` (động lực học lên cao cao, nhưng thấp hơn cụm 0).
+- **Đặc trưng nổi bật**: Cụm này nổi bật với hành vi xã hội cao (goout, Walc) và thời gian học thấp, kết hợp với việc vắng học nhiều. Sự khác biệt chính là phong cách sống ít tập trung vào học tập và phụ thuộc nhiều vào yếu tố xã hội, làm nên đặc trưng của nhóm học sinh có thể bị phân tâm.
+
+#### **Cụm 2**
+- **Trung bình G3: 9.30** (thấp nhất, thuộc ngưỡng "Yếu").
+- **Đặc trưng định lượng**:
+  - `age: 17.94` (tuổi cao nhất, có thể là học sinh lớn tuổi hơn).
+  - `absences: 8.91` (vắng học nhiều nhất).
+  - `failures: 1.68` (số lần trượt môn cao nhất, rõ rệt so với các cụm khác).
+  - `studytime: 1.73` (thời gian học thấp, tương tự cụm 1).
+- **Đặc trưng định tính**:
+  - `higher: yes (72.0%)` (động lực học lên cao thấp hơn các cụm khác).
+  - `schoolsup: no (88.8%)` (ít được hỗ trợ từ trường, cao thứ hai).
+  - `paid: no (82.2%)`, `activities: no (53.3%)` (ít tham gia hoạt động và khóa học trả phí).
+- **Đặc trưng nổi bật**: Cụm này nổi bật với tuổi cao, vắng học nhiều, và số lần trượt môn cao, kết hợp với thời gian học thấp. Sự khác biệt chính là vấn đề học thuật (failures) và thiếu hỗ trợ, làm nên đặc trưng của nhóm học sinh gặp khó khăn trong học tập.
+
+#### **Cụm 3**
+- **Trung bình G3: 12.03** (trung bình, cao hơn cụm 1 và 2).
+- **Đặc trưng định lượng**:
+  - `age: 16.55` (giữa cụm 0 và 1, không quá trẻ hoặc quá già).
+  - `famrel: 3.87` (mối quan hệ gia đình tốt, cao thứ hai sau cụm 0).
+  - `absences: 3.32` (vắng học ít, tương tự cụm 0).
+  - `studytime: 2.03` (thời gian học trung bình, cao hơn cụm 1 và 2).
+- **Đặc trưng định tính**:
+  - `sex: F (72.3%)` (học sinh nữ chiếm ưu thế rõ rệt).
+  - `higher: yes (92.5%)` (động lực học lên cao cao, gần cụm 0).
+  - `activities: no (61.3%)` (ít tham gia hoạt động, cao nhất).
+- **Đặc trưng nổi bật**: Cụm này nổi bật với học sinh nữ, mối quan hệ gia đình tốt, và động lực học lên cao, nhưng ít tham gia hoạt động ngoại khóa. Sự khác biệt chính là sự tập trung vào học tập hơn là hoạt động xã hội, làm nên đặc trưng của nhóm học sinh cân bằng giữa học tập và phong cách sống.
+
+---
+
+### Tổng kết các điểm khác biệt chính
+1. **Cụm 0 vs các cụm khác**:
+   - Khác biệt: Quan hệ gia đình tốt nhất (famrel: 4.09), động lực học lên cao cao nhất (higher: 99.2%), và vắng học ít (absences: 3.47).
+   - Đặc trưng: Nhóm học sinh có môi trường gia đình hỗ trợ mạnh và cam kết học tập cao.
+
+2. **Cụm 1 vs các cụm khác**:
+   - Khác biệt: Uống rượu cuối tuần (Walc: 4.11) và đi chơi (goout: 4.10) cao nhất, thời gian học thấp nhất (studytime: 1.65), và học sinh nam chiếm ưu thế (sex: M 73.9%).
+   - Đặc trưng: Nhóm học sinh có phong cách sống xã hội hóa cao, ít tập trung vào học tập.
+
+3. **Cụm 2 vs các cụm khác**:
+   - Khác biệt: Tuổi cao nhất (age: 17.94), vắng học nhiều nhất (absences: 8.91), và số lần trượt môn cao nhất (failures: 1.68).
+   - Đặc trưng: Nhóm học sinh gặp khó khăn học thuật, có thể do tuổi tác và thiếu hỗ trợ.
+
+4. **Cụm 3 vs các cụm khác**:
+   - Khác biệt: Học sinh nữ chiếm ưu thế nhất (sex: F 72.3%), ít tham gia hoạt động (activities: no 61.3%), và động lực học lên cao cao (higher: 92.5%).
+   - Đặc trưng: Nhóm học sinh nữ tập trung vào học tập, ít tham gia hoạt động xã hội, với hỗ trợ gia đình tốt.
+
+---
+
+### Nhận xét tổng quát
+- **Yếu tố học tập**: Cụm 0 và 3 có thời gian học và điểm số tốt hơn, trong khi cụm 1 và 2 có thời gian học thấp và điểm số kém hơn, với cụm 2 nổi bật bởi số lần trượt môn.
+- **Yếu tố xã hội**: Cụm 1 có phong cách sống xã hội hóa cao (goout, Walc), trong khi cụm 3 ít tham gia hoạt động, và cụm 0, 2 trung bình.
+- **Yếu tố gia đình và hỗ trợ**: Cụm 0 có quan hệ gia đình và hỗ trợ tốt nhất, cụm 2 và 1 thiếu hỗ trợ từ trường (schoolsup: no cao).
+- **Động lực học lên cao**: Tất cả các cụm đều có động lực cao (higher: yes > 70%), nhưng cụm 0 dẫn đầu với 99.2%.
+
+Những khác biệt này giúp xác định rõ đặc trưng riêng của từng cụm, từ đó có thể đưa ra chiến lược hỗ trợ phù hợp (ví dụ: hỗ trợ học tập cho cụm 2, quản lý thời gian cho cụm 1). Nếu bạn muốn phân tích sâu hơn một cụm cụ thể, hãy cho tôi biết!
