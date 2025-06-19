@@ -1,6 +1,6 @@
-streamlit
+streamlit==1.46.0
 pandas
-plotly
+plotly==6.1.2
 scikit-learn
-matplotlib
-seaborn
+matplotlib==3.10.3
+seaborn==0.13.2

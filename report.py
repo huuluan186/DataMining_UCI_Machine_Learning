@@ -60,11 +60,22 @@ original_len = len(df)
 # --- loại G3 <= 0 và outlier ---
 df = df[df["G3"] > 0]
 filtered_len = len(df)
-Q1, Q3 = df["G3"].quantile([0.25, 0.75])
-IQR = Q3 - Q1
-lower, upper = Q1 - 1.5 * IQR, Q3 + 1.5 * IQR
-df_cleaned = df[(df["G3"] >= lower) & (df["G3"] <= upper)].copy()
+
+# Tùy chọn cột số
+num_cols = ["absences","G3","G1","G2"]
+
+# Loại bỏ outlier trên toàn bộ các cột số (dùng IQR)
+df_cleaned = df.copy()
+for col in num_cols:
+    Q1 = df_cleaned[col].quantile(0.25)
+    Q3 = df_cleaned[col].quantile(0.75)
+    IQR = Q3 - Q1
+    lower = Q1 - 1.5 * IQR
+    upper = Q3 + 1.5 * IQR
+    df_cleaned = df_cleaned[(df_cleaned[col] >= lower) & (df_cleaned[col] <= upper)]
+
 cleaned_len = len(df_cleaned)
+
 
 # ----------------------
 # TIỀN XỬ LÝ & PHÂN CỤM
@@ -94,14 +105,6 @@ X_cat_encoded = encoder.fit_transform(X_cat)
 # 4. Ghép lại thành ma trận cuối cùng
 X_scaled = np.hstack([X_num_scaled, X_cat_encoded])
 
-# 5. Tiếp tục với PCA và KMeans như bình thường
-pca_model = PCA(n_components=2)
-pca_2d = pca_model.fit_transform(X_scaled)
-
-kmeans = KMeans(n_clusters=chosen_k, random_state=42, n_init=20)
-clusters = kmeans.fit_predict(X_scaled)
-df_cleaned["Cluster"] = clusters
-
 # --- tính PCA & phân cụm ---
 #Tạo một mô hình PCA với số chiều muốn giữ lại là x thành phần chính
 pca_model = PCA(n_components=2)
@@ -118,8 +121,8 @@ df_cleaned["Cluster"] = clusters
 # GÁN NHÃN HỌC LỰC (chỉ để HẬU KIỂM)
 # ----------------------
 def level(g):
-    if g < 10:   return "Yếu"
-    elif g < 13: return "Trung bình"
+    if g < 6:   return "Yếu"
+    elif g < 11: return "Trung bình"
     elif g < 16: return "Khá"
     else:        return "Giỏi"
 
@@ -142,22 +145,49 @@ if "selected_features" not in st.session_state:
     st.session_state.selected_features = all_features
 if "clusters_selected" not in st.session_state:
     st.session_state.clusters_selected = clusters
+
 # Hiển thị bảng G3_level vs Cluster ở đầu mỗi tab
 if st.session_state.ok_clicked:
     df_cleaned["Cluster"] = st.session_state.clusters_selected
-    ct = pd.crosstab(df_cleaned["Cluster"], df_cleaned["G3_level"], normalize="index") * 100
-    g3_mean = df_cleaned.groupby("Cluster")["G3"].mean().round(2)
-    ct["Trung bình G3"] = g3_mean
-else:
-    ct = pd.crosstab(df_cleaned["Cluster"], df_cleaned["G3_level"], normalize="index") * 100
-    g3_mean = df_cleaned.groupby("Cluster")["G3"].mean().round(2)
-    ct["Trung bình G3"] = g3_mean
 
+ct = pd.crosstab(df_cleaned["Cluster"], df_cleaned["G3_level"], normalize="index") * 100
+g3_mean = df_cleaned.groupby("Cluster")["G3"].mean().round(2)
+ct["Trung bình G3"] = g3_mean
+
+
+# Copy bảng gốc để hiển thị
+ct_display = ct.copy()
+
+# Cột cần rename (hiển thị)
+ct_display = ct.rename(columns={
+    "Giỏi": "Giỏi (16-20)",
+    "Khá": "Khá (11-15)",
+    "Trung bình": "Trung bình (6-10)",
+    "Yếu": "Yếu (0-5)"
+})
+
+# Các cột cần highlight
+cols_pct_renamed = ["Giỏi (16-20)", "Khá (11-15)", "Trung bình (6-10)", "Yếu (0-5)"]
+
+# Subheader
 st.subheader("🔗 G3_level vs Cluster")
-st.dataframe(ct.style.format({"Trung bình G3": "{:.2f}", "Giỏi": "{:.1f}%", "Khá": "{:.1f}%", "Trung bình": "{:.1f}%", "Yếu": "{:.1f}%"}).highlight_max(axis=1, color="lightgreen"))
 
+# Hiển thị với định dạng % nhưng dữ liệu vẫn là số float → highlight đúng
+st.write(
+    ct_display.style
+    .format({
+        "Trung bình G3": "{:.2f}",
+        "Giỏi (16-20)": "{:.1f}%",
+        "Khá (11-15)": "{:.1f}%",
+        "Trung bình (6-10)": "{:.1f}%",
+        "Yếu (0-5)": "{:.1f}%"
+    })
+    .highlight_max(subset=cols_pct_renamed, axis=1, color="lightgreen")
+)
+
+# Tính purity vẫn như cũ
 purity = ct[["Giỏi", "Khá", "Trung bình", "Yếu"]].max(axis=1).mean() / 100
-st.markdown(f"✨ **Purity trung bình**: {purity:.2%}")
+st.markdown(f"✨ **Purity trung bình**: {purity:.1%}")
 
 # ----------------------
 # GIAO DIỆN BÊN TRÁI – CHỌN BƯỚC
@@ -198,6 +228,9 @@ if chosen_step == steps[0]:
     st.markdown(f"**Số lượng bản ghi ban đầu:** {original_len}")
     st.markdown(f"**Số lượng bản ghi sau khi loại bỏ G3 ≤ 0:** {filtered_len}")
     st.markdown(f"**Số lượng bản ghi trước khi loại bỏ outliers:** {filtered_len}")
+    st.markdown(f"**Số lượng sau khi loại outlier tất cả biến số:** {cleaned_len}")
+    st.markdown(f"**🧹 Đã loại bỏ:** {filtered_len - cleaned_len} bản ghi có ngoại lai.")
+
     # Đánh dấu outlier
     df["is_outlier"] = ~df.index.isin(df_cleaned.index)
 
