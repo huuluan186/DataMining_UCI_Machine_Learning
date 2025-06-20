@@ -81,12 +81,12 @@ cleaned_len = len(df_cleaned)
 # TIỀN XỬ LÝ & PHÂN CỤM
 # ----------------------
 categorical_cols = [
-    "school", "sex", "address", "famsize", "Pstatus", "Mjob", "Fjob", "reason", "guardian",
+    "school", "sex", "age", "address", "famsize", "Pstatus", "Mjob", "Fjob", "reason", "guardian",
     "schoolsup", "famsup", "paid", "activities", "nursery", "higher", "internet", "romantic",
 ]
 numerical_cols = [
     "Medu", "Fedu", "studytime", "failures", "famrel", "freetime", "goout",
-    "Dalc", "Walc", "health", "absences","G3"
+    "Dalc", "Walc", "health", "absences", "traveltime" ,"G3"
 ]
 
 
@@ -405,11 +405,14 @@ elif chosen_step == steps[1]:
 elif chosen_step == steps[2]:
     st.subheader("3️⃣ Phân cụm và PCA Visualization")
 
+    kmeans_selected = KMeans(n_clusters=chosen_k, random_state=42, n_init=20)
     if st.session_state.ok_clicked:
         # Kiểm tra và cập nhật df_cleaned["Cluster"] với cụm từ biến đã chọn
         if len(st.session_state.clusters_selected) != len(df_cleaned):
             st.warning("Số lượng cụm không khớp với dữ liệu. Kiểm tra lại biến đã chọn!")
         else:
+            X_for_clustering = st.session_state.X_scaled_selected
+            st.session_state.clusters_selected = kmeans_selected.fit_predict(X_for_clustering)
             df_cleaned["Cluster"] = st.session_state.clusters_selected.astype(int)  # Ép về int để loại NaN
 
         # Tính lại PCA 2D từ dữ liệu đã chọn
@@ -421,8 +424,6 @@ elif chosen_step == steps[2]:
         pca_3d = pca_model_3d.fit_transform(st.session_state.X_scaled_selected)
 
         # Tính centroid từ cluster_centers_ và áp dụng PCA
-        kmeans_selected = KMeans(n_clusters=chosen_k, random_state=42, n_init=20)
-        kmeans_selected.fit(st.session_state.X_scaled_selected)  # Tính lại KMeans để lấy cluster_centers_
         centroids_2d = pca_model_2d.transform(kmeans_selected.cluster_centers_)
         centroids_3d = pca_model_3d.transform(kmeans_selected.cluster_centers_)
     else:
@@ -455,7 +456,7 @@ elif chosen_step == steps[2]:
         ax.text(
             x + 0.05,  # Slight offset in x for readability
             y + 0.05,  # Slight offset in y for readability
-            f"C{i+1}",  # Label as "Cụm 1", "Cụm 2", etc.
+            f"C{i}",  # Label as "Cụm 1", "Cụm 2", etc.
             fontsize=10,
             color="black",
             ha="left",
@@ -592,49 +593,64 @@ elif chosen_step == steps[6]:
     st.subheader("7️⃣ 🔍 Top N đặc trưng gốc phân biệt các cụm")
 
     if st.session_state.ok_clicked:
+        # ---------- 1) Random‑Forest importance ----------
         from sklearn.ensemble import RandomForestClassifier
         rf = RandomForestClassifier(random_state=42)
-        rf.fit(st.session_state.X_scaled_selected, st.session_state.clusters_selected)
+        rf.fit(st.session_state.X_scaled_selected,
+               st.session_state.clusters_selected)
 
-        feat_df = pd.DataFrame({
-            "Feature": st.session_state.selected_features,
-            "Importance": rf.feature_importances_
-        }).sort_values(by="Importance", ascending=False)
+        feat_df = (pd.DataFrame({
+                      "Feature": st.session_state.selected_features,
+                      "Importance": rf.feature_importances_})
+                   .sort_values(by="Importance", ascending=False))
 
-        top_n = st.slider("Chọn số đặc trưng", min_value=1, max_value=len(st.session_state.selected_features), value=5)
-        st.dataframe(feat_df.head(top_n).style.highlight_max(subset=["Importance"], color='lightgreen'))
+        top_n = st.slider("Chọn số đặc trưng", 1, len(feat_df), 5)
+        st.dataframe(feat_df.head(top_n)
+                     .style.highlight_max(subset=["Importance"],
+                                          color="lightgreen"))
 
         fig_feat, ax = plt.subplots(figsize=(5, 3.5))
-        sns.barplot(data=feat_df.head(top_n), x="Importance", y="Feature", palette="Blues_r", ax=ax)
+        sns.barplot(data=feat_df.head(top_n), x="Importance", y="Feature",
+                    palette="Blues_r", ax=ax)
         ax.set_title("Top đặc trưng quan trọng nhất")
         st.pyplot(fig_feat)
 
-        # Thống kê biến định lượng
+        # ---------- 2) Thống kê mô tả định lượng ----------
         df_cleaned["Cluster"] = st.session_state.clusters_selected
-        numerical_summary = df_cleaned.groupby('Cluster')[st.session_state.selected_num_cols].agg(['mean', 'median', 'std', 'min', 'max']).round(2)
+        num_summary = (df_cleaned
+                       .groupby("Cluster")[st.session_state.selected_num_cols]
+                       .agg(["mean", "median", "std", "min", "max"])
+                       .round(2))
         st.markdown("**📊 Thống kê mô tả các biến định lượng theo cụm:**")
-        st.dataframe(numerical_summary.style.highlight_max(axis=0, color='lightblue'))
+        st.dataframe(num_summary.style.highlight_max(axis=0,
+                                                     color="lightblue"))
 
-        # Heatmap trung bình
-        fig_heatmap, ax = plt.subplots(figsize=(8, 5))
-        sns.heatmap(
-            numerical_summary.xs('mean', level=1, axis=1),
-            annot=True, fmt=".2f", cmap="coolwarm", ax=ax,
-            cbar_kws={"label": "Giá trị trung bình"}
-        )
+        fig_heat, ax = plt.subplots(figsize=(8, 5))
+        sns.heatmap(num_summary.xs("mean", level=1, axis=1),
+                    annot=True, fmt=".2f", cmap="coolwarm",
+                    cbar_kws={"label": "Giá trị trung bình"}, ax=ax)
         ax.set_title("Trung bình các biến định lượng theo cụm")
-        st.pyplot(fig_heatmap)
+        st.pyplot(fig_heat)
 
-        # Tỷ lệ biến định tính
-        selected_cat_cols = [col.split('_')[0] for col in st.session_state.selected_features if '_' in col]
-        st.markdown("**📊 Tỷ lệ phần trăm các biến định tính theo cụm:**")
-        for col in selected_cat_cols:
-            if col in categorical_cols:
-                tab = pd.crosstab(st.session_state.clusters_selected, df_cleaned[col], normalize="index") * 100
-                st.markdown(f"**{col}:**")
-                st.dataframe(tab.style.format("{:.1f}%").highlight_max(axis=1, color="lightgreen"))
+        # ---------- 3) Bảng % từng biến định tính ----------
+        st.markdown("**📊 Tỷ lệ phần trăm từng biến định tính theo cụm:**")
+
+        # Danh sách biến định tính gốc, không trùng lặp
+        cat_cols = list(dict.fromkeys(st.session_state.selected_cat_cols))
+
+        for col in cat_cols:
+            if col in categorical_cols:            # bảo đảm là biến gốc
+                tab = (pd.crosstab(df_cleaned["Cluster"],
+                                   df_cleaned[col],
+                                   normalize="index") * 100)
+                tab.index.name = "Cluster"
+                st.markdown(f"**🔹 {col}:**")
+                st.dataframe(tab.style
+                                .format("{:.1f}%")
+                                .highlight_max(axis=1, color="lightgreen"))
     else:
         st.warning("Vui lòng nhấn 'OK' ở Bước 2 để chọn biến và phân cụm!")
+
 
 # ----------------------
 # BƯỚC 8: Khám phá nhận xét đặc trưng cụm
@@ -647,28 +663,45 @@ elif chosen_step == steps[7]:
         g3_mean = df_cleaned.groupby("Cluster")["G3"].mean().round(2)
         numerical_summary = df_cleaned.groupby("Cluster")[st.session_state.selected_num_cols].mean().round(2)
 
-        cat_summary = {}
-        selected_cat_cols = [col.split('_')[0] for col in st.session_state.selected_features if '_' in col]
-        for col in selected_cat_cols:
-            if col in categorical_cols:
-                cat_summary[col] = df_cleaned.groupby("Cluster")[col].value_counts(normalize=True).unstack().fillna(0) * 100
+        # Lấy danh sách biến định tính gốc từ selected_features
+        selected_cat_cols = list(set(col.split('_')[0] for col in st.session_state.selected_features if '_' in col and col.split('_')[0] in categorical_cols))
 
+        @st.cache_data
+        def compute_cat_summary(df_cleaned, selected_cat_cols):
+            cat_summary = {}
+            for col in selected_cat_cols:
+                if col in categorical_cols:
+                    crosstab = pd.crosstab(df_cleaned["Cluster"], df_cleaned[col], normalize="index") * 100
+                    cat_summary[col] = crosstab
+            return cat_summary
+
+        if "cat_summary" not in st.session_state:
+            st.session_state.cat_summary = compute_cat_summary(df_cleaned, selected_cat_cols)
+        cat_summary = st.session_state.cat_summary
+
+        # Hiển thị thông tin cho từng cụm
         for cluster in range(chosen_k):
             st.markdown(f"### Cụm {cluster}")
             st.markdown(f"**Trung bình G3**: {g3_mean[cluster]:.2f}")
 
+            # Biến định lượng nổi bật
             top_num = numerical_summary.loc[cluster].sort_values(ascending=False)
             st.markdown("**📊 Biến định lượng nổi bật**")
             st.table(top_num.reset_index().rename(columns={"index": "Biến", cluster: "Giá trị"}))
 
+            # Biến định tính nổi bật cho cụm hiện tại
             st.markdown(f"**Biến định tính nổi bật**:")
             cat_results = []
             for col in selected_cat_cols:
-                if col in categorical_cols:
+                if col in cat_summary and not cat_summary[col].empty:
                     top_cat = cat_summary[col].loc[cluster].idxmax()
                     max_pct = cat_summary[col].loc[cluster].max()
                     cat_results.append({"Biến": col, "Giá trị nổi bật": top_cat, "Tỷ lệ (%)": f"{max_pct:.1f}%"})
-            cat_df = pd.DataFrame(cat_results)
-            st.table(cat_df)
+            if cat_results:
+                cat_df = pd.DataFrame(cat_results)
+                st.table(cat_df)
+            else:
+                st.write(f"Không có biến định tính nào được tìm thấy cho cụm {cluster}.")
+
     else:
         st.warning("Vui lòng nhấn 'OK' ở Bước 2 để chọn biến và phân cụm!")
